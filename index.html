@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最大公因數教學系統</title>
+    <style>
+        :root {
+            /* 柔和海洋大地風調色盤 */
+            --ocean-light: #E0ECE4;
+            --ocean-blue: #7FB5B5;
+            --ocean-deep: #4B7F83;
+            --earth-sand: #F4E8D1;
+            --earth-brown: #A07855;
+            --earth-green: #8F9E76;
+            --text-main: #3E3E3E;
+            --white-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            /* 全面改用黑體系列 */
+            font-family: '微軟正黑體', 'Microsoft JhengHei', 'Heiti TC', '黑體', sans-serif;
+            background: linear-gradient(135deg, var(--ocean-light) 0%, var(--earth-sand) 100%);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .app-container {
+            background-color: var(--white-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(75, 127, 131, 0.15);
+            padding: 30px;
+            width: 100%;
+            max-width: 650px;
+            border-top: 10px solid var(--ocean-blue);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--ocean-deep);
+            margin-top: 0;
+            border-bottom: 2px dashed var(--earth-green);
+            padding-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid var(--ocean-blue);
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .method-selector {
+            background-color: var(--earth-sand);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border: 1px solid var(--earth-brown);
+        }
+
+        .radio-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--ocean-deep);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: var(--earth-green);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .step-container {
+            background-color: #fff;
+            border-left: 5px solid var(--earth-brown);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            min-height: 200px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .step-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--ocean-light);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .highlight {
+            color: var(--earth-brown);
+            font-weight: bold;
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--ocean-deep);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>最大公因數教學系統</h1>
+        
+        <div class="input-group">
+            <div class="input-box">
+                <label for="num1">第一個數字</label>
+                <input type="number" id="num1" min="1" value="36">
+            </div>
+            <div class="input-box">
+                <label for="num2">第二個數字</label>
+                <input type="number" id="num2" min="1" value="24">
+            </div>
+        </div>
+
+        <div class="method-selector">
+            <div class="radio-row">
+                <label>
+                    <input type="radio" name="method" value="subtraction" checked> 
+                    減法觀念 (適合小數字)
+                </label>
+                <label>
+                    <input type="radio" name="method" value="division_horizontal"> 
+                    除法觀念 - 橫式
+                </label>
+                <label>
+                    <input type="radio" name="method" value="division_vertical"> 
+                    除法觀念 - 直式
+                </label>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button id="startBtn" onclick="initProcess()">開始解題</button>
+            <button id="nextBtn" onclick="showNextStep()" disabled>下一步</button>
+            <button id="resetBtn" onclick="resetApp()" style="background-color: var(--earth-brown);">重置</button>
+        </div>
+
+        <div class="step-container" id="stepDisplay">
+            請輸入兩個數字，選擇教學方式後點擊「開始解題」。
+        </div>
+    </div>
+
+    <footer>
+        Designed by Director ETSHEN | Version V26.1
+    </footer>
+
+    <script>
+        let steps = [];
+        let currentStepIndex = 0;
+
+        function initProcess() {
+            const num1 = parseInt(document.getElementById('num1').value);
+            const num2 = parseInt(document.getElementById('num2').value);
+            const method = document.querySelector('input[name="method"]:checked').value;
+
+            if (isNaN(num1) || isNaN(num2) || num1 <= 0 || num2 <= 0) {
+                alert('請輸入正整數！');
+                return;
+            }
+
+            steps = [];
+            currentStepIndex = 0;
+            document.getElementById('stepDisplay').innerHTML = '';
+            
+            if (method === 'subtraction') {
+                generateSubtractionSteps(num1, num2);
+            } else if (method === 'division_horizontal') {
+                generateDivisionHorizontalSteps(num1, num2);
+            } else {
+                generateDivisionVerticalSteps(num1, num2);
+            }
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+            
+            showNextStep();
+        }
+
+        // 減法觀念：更相減損術
+        function generateSubtractionSteps(a, b) {
+            steps.push("【初始狀態】我們要找出 " + a + " 和 " + b + " 的最大公因數。<br>使用<span class='highlight'>減法觀念</span>：不斷用大數減去小數，直到兩數相等為止。");
+            
+            let currentA = a;
+            let currentB = b;
+            let stepCount = 1;
+
+            while (currentA !== currentB) {
+                if (currentA > currentB) {
+                    let diff = currentA - currentB;
+                    steps.push("步驟 " + stepCount + "：比較 " + currentA + " 與 " + currentB + "。<br>因為 " + currentA + " > " + currentB + "，所以用大數減小數：<br><span class='highlight'>" + currentA + " - " + currentB + " = " + diff + "</span><br>現在的兩個數字變成：" + diff + " 與 " + currentB + "。");
+                    currentA = diff;
+                } else {
+                    let diff = currentB - currentA;
+                    steps.push("步驟 " + stepCount + "：比較 " + currentA + " 與 " + currentB + "。<br>因為 " + currentB + " > " + currentA + "，所以用大數減小數：<br><span class='highlight'>" + currentB + " - " + currentA + " = " + diff + "</span><br>現在的兩個數字變成：" + currentA + " 與 " + diff + "。");
+                    currentB = diff;
+                }
+                stepCount++;
+            }
+            steps.push("【結束】目前的兩個數字已經相等（都是 <span class='highlight'>" + currentA + "</span>）。<br>這代表 " + a + " 和 " + b + " 的最大公因數就是 <span class='highlight'>" + currentA + "</span>！");
+        }
+
+        // 除法觀念 - 橫式：輾轉相除法
+        function generateDivisionHorizontalSteps(a, b) {
+            steps.push("【初始狀態】我們要找出 " + a + " 和 " + b + " 的最大公因數。<br>使用<span class='highlight'>除法觀念（橫式）</span>：用大數除以小數，再用除數除以餘數，直到餘數為 0 為止。");
+            
+            let big = Math.max(a, b);
+            let small = Math.min(a, b);
+            let stepCount = 1;
+
+            if (a !== big) {
+                steps.push("首先，確認數字大小：" + big + " > " + small + "，將以 " + big + " 作為被除數。");
+            }
+
+            while (small !== 0) {
+                let quotient = Math.floor(big / small);
+                let remainder = big % small;
+                
+                steps.push("步驟 " + stepCount + "：將 " + big + " 除以 " + small + "。<br><span class='highlight'>" + big + " ÷ " + small + " = " + quotient + " ... 餘數為 " + remainder + "</span>");
+                
+                if (remainder === 0) {
+                    steps.push("發現餘數為 0！計算結束。<br>最後一個不為 0 的除數是 <span class='highlight'>" + small + "</span>。<br>因此，" + a + " 和 " + b + " 的最大公因數就是 <span class='highlight'>" + small + "</span>！");
+                    break;
+                } else {
+                    steps.push("餘數是 " + remainder + "，還不是 0。<br>接下來，將原本的除數（" + small + "）變成新的被除數，原本的餘數（" + remainder + "）變成新的除數，繼續往下除。");
+                }
+                
+                big = small;
+                small = remainder;
+                stepCount++;
+            }
+        }
+
+        // 除法觀念 - 直式：輾轉相除直式
+        function generateDivisionVerticalSteps(a, b) {
+            let big = Math.max(a, b);
+            let small = Math.min(a, b);
+            let valL = big;
+            let valR = small;
+            let activeSide = 'L'; // 'L' 代表目前是以左邊數字為被除數
+
+            let rows = [];
+            rows.push({ lq: "", ln: valL, rn: valR, rq: "", uL: false, uR: false });
+
+            let stepData = [];
+            stepData.push({
+                text: "【初始狀態】使用<span class='highlight'>直式輾轉相除法</span>。<br>畫上垂直分隔線，將大數 " + big + " 放在左邊，小數 " + small + " 放在右邊。",
+                rowsCount: 1
+            });
+
+            let stepCount = 1;
+            while (valL !== 0 && valR !== 0) {
+                if (activeSide === 'L') {
+                    let Q = Math.floor(valL / valR);
+                    let sub = Q * valR;
+                    let rem = valL - sub;
+                    
+                    rows.push({ lq: Q, ln: sub, rn: "", rq: "", uL: true, uR: false });
+                    rows.push({ lq: "", ln: rem, rn: "", rq: "", uL: false, uR: false });
+                    
+                    stepData.push({
+                        text: "步驟 " + stepCount + "：將 " + valL + " 除以 " + valR + "。<br>商數為 <span class='highlight'>" + Q + "</span> 寫在左側外側。相減後餘數為 <span class='highlight'>" + rem + "</span> 寫在下方。",
+                        rowsCount: rows.length
+                    });
+                    
+                    valL = rem;
+                    activeSide = 'R';
+                } else {
+                    let Q = Math.floor(valR / valL);
+                    let sub = Q * valL;
+                    let rem = valR - sub;
+                    
+                    rows.push({ lq: "", ln: "", rn: sub, rq: Q, uL: false, uR: true });
+                    rows.push({ lq: "", ln: "", rn: rem, rq: "", uL: false, uR: false });
+                    
+                    stepData.push({
+                        text: "步驟 " + stepCount + "：換邊繼續除，將 " + valR + " 除以 " + valL + "。<br>商數為 <span class='highlight'>" + Q + "</span> 寫在右側外側。相減後餘數為 <span class='highlight'>" + rem + "</span> 寫在下方。",
+                        rowsCount: rows.length
+                    });
+                    
+                    valR = rem;
+                    activeSide = 'L';
+                }
+                stepCount++;
+            }
+
+            let gcd = Math.max(valL, valR);
+            stepData.push({
+                text: "【結束】發現餘數為 0！計算結束。<br>最後一個不為 0 的除數是 <span class='highlight'>" + gcd + "</span>。這代表最大公因數就是 <span class='highlight'>" + gcd + "</span>！",
+                rowsCount: rows.length
+            });
+
+            // 組裝每個直式步驟的 HTML
+            for (let i = 0; i < stepData.length; i++) {
+                let data = stepData[i];
+                let tableHtml = "<table style='margin: 15px auto; border-collapse: collapse; font-size: 26px; text-align: center; font-family: monospace; color: var(--text-main);'>";
+                
+                for (let j = 0; j < data.rowsCount; j++) {
+                    let row = rows[j];
+                    let styleLQ = "padding: 5px 15px; color: #D9534F; font-weight: bold;";
+                    let styleLN = "padding: 5px 15px; border-left: 2px solid var(--ocean-deep); border-right: 2px solid var(--ocean-deep);";
+                    if (row.uL) styleLN += "border-bottom: 2px solid var(--ocean-deep);";
+                    
+                    let styleRN = "padding: 5px 15px;";
+                    if (row.uR) styleRN += "border-bottom: 2px solid var(--ocean-deep);";
+                    
+                    let styleRQ = "padding: 5px 15px; border-left: 2px solid var(--ocean-deep); color: #D9534F; font-weight: bold;";
+
+                    tableHtml += "<tr>";
+                    tableHtml += "<td style='" + styleLQ + "'>" + row.lq + "</td>";
+                    tableHtml += "<td style='" + styleLN + "'>" + row.ln + "</td>";
+                    tableHtml += "<td style='" + styleRN + "'>" + row.rn + "</td>";
+                    tableHtml += "<td style='" + styleRQ + "'>" + row.rq + "</td>";
+                    tableHtml += "</tr>";
+                }
+                tableHtml += "</table>";
+                
+                steps.push(data.text + tableHtml);
+            }
+        }
+
+        function showNextStep() {
+            if (currentStepIndex < steps.length) {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step-item';
+                stepDiv.innerHTML = steps[currentStepIndex];
+                
+                const display = document.getElementById('stepDisplay');
+                if (currentStepIndex === 0) display.innerHTML = ''; 
+                
+                display.appendChild(stepDiv);
+                display.scrollTop = display.scrollHeight;
+                
+                currentStepIndex++;
+            }
+            
+            if (currentStepIndex >= steps.length) {
+                document.getElementById('nextBtn').disabled = true;
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('num1').value = 36;
+            document.getElementById('num2').value = 24;
+            document.getElementById('stepDisplay').innerHTML = '請輸入兩個數字，選擇教學方式後點擊「開始解題」。';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = true;
+            steps = [];
+            currentStepIndex = 0;
+        }
+    </script>
+</body>
+</html>
